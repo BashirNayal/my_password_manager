@@ -3,14 +3,14 @@
 #include <netdb.h>
 #include <unistd.h>
 
+#include "log.h"
+
 int32_t main(int32_t argc, char **argv) {
 
 
-    /* port client will connect to         */
-    struct hostent *host_name;    /* server host name information        */
+    struct hostent *host_name;   
     uint16_t port;      
     struct sockaddr_in server; 
-    struct sockaddr_in client;
     port = 5000;
     /*
      * Check Arguments Passed. Should be hostname and port.
@@ -43,7 +43,6 @@ int32_t main(int32_t argc, char **argv) {
         // Handle error
     }
 
-    uint32_t namelen = sizeof(client);
     int32_t connect_result = connect(client_fd, (struct sockaddr *)&server, sizeof(server));
     if (connect_result < 0) 
     {

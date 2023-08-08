@@ -1,0 +1,12 @@
+-g
+-W
+-Wall
+-Wextra
+-Wpedantic
+-Wconversion
+-Wshadow
+-DDEBUG
+-Icommon/include
+-Iserver/include
+-Iclient/include
+-Iserver_db/include
