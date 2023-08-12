@@ -8,6 +8,8 @@
 #include <sys/wait.h>
 
 #include "log.h"
+#include "proto.h"
+#include "pwd_err.h"
 
 #define CLIENT_MAX 1
 
@@ -78,6 +80,19 @@ int32_t main(int32_t argc, char **argv) {
         }
         log_info("MAIN", "Child process accepted a connection\n");
         // Child logic will be moved to a function from a specific file later
+        uint8_t buffer[65535];
+        uint32_t read_len;
+        while (proto_read(client_fd, &buffer,  &read_len) != PWD_FAILURE) 
+        {
+        
+            proto_hdr_st *packet = (proto_hdr_st *)&buffer;
+            log_dbg("CHILD", "msg_len: %d, msg_type: %d ", packet->msg_len, packet->msg_type);
+            proto_print(packet);
+            log_dbg("CHILD", "pwd request with len: %d\n", (proto_args_req_password_st*)packet->data[0]);
+            log_info("CHILD", "read_lean: %d\n", read_len);
+
+        }
+
         log_info("CHILD", "Closing connection with client\n");
         close(client_fd);
         return EXIT_SUCCESS;

@@ -25,6 +25,7 @@ typedef enum msg_type_s
 
     MSG_TYPE_REQ_LOGIN,
     MSG_TYPE_REQ_REGISTR,
+    MSG_TYPE_REQ_PWD,
 
     MSG_TYPE_RES_LOGIN,
     MSG_TYPE_RES_REGISTR,
@@ -61,6 +62,17 @@ typedef struct proto_args_req_registr_s
     uint16_t password_len;
 } proto_args_req_registr_st;
 
+typedef struct proto_args_req_password_s
+{
+    uint16_t pwd_length_idx;
+    uint16_t has_capital_letters_idx;
+    uint16_t has_numbers_idx;
+    uint16_t has_special_characters_idx;
+
+
+} proto_args_req_password_st;
+
+
 
 /* All the response structs have a status variable which indicates whether or
  * not the server accepted the request/data sent by the client. These response
@@ -82,6 +94,7 @@ typedef struct proto_parsed_s
     union {
         proto_args_req_login_st req_login;
         proto_args_req_registr_st req_registr;
+        proto_args_req_password_st req_pwd;
 
         proto_args_res_login_st res_login;
         proto_args_res_registr_st res_registr;
