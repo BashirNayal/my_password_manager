@@ -93,8 +93,8 @@ static pwd_err_et parse_req_registr(proto_hdr_st *packet,
 
     return PWD_SUCCESS;
 }
-static pwd_err_et parse_req_password(proto_hdr_st *packet,
-                                            proto_args_req_password_st *data_parsed)
+static pwd_err_et parse_req_new_password(proto_hdr_st *packet,
+                                            proto_args_req_new_password_st *data_parsed)
 {
         uint16_t separators[4] = {0};
     if (separators_find(packet->data,
@@ -109,6 +109,39 @@ static pwd_err_et parse_req_password(proto_hdr_st *packet,
     data_parsed->has_capital_letters_idx = separators[0] + 1;
     data_parsed->has_numbers_idx = separators[1] + 1;
     data_parsed->has_special_characters_idx = separators[2] + 1;
+
+    return PWD_SUCCESS;
+}
+static pwd_err_et parse_req_add_entry(proto_hdr_st *packet,
+                                            proto_args_req_add_entry_st *data_parsed)
+{
+        uint16_t separators[5] = {0};
+    if (separators_find(packet->data,
+                        packet->msg_len - (uint16_t)sizeof(proto_hdr_st), 5,
+                        separators, PROTO_SEPARATOR_CHAR, 1) == PWD_FAILURE)
+    {
+        log_err("PROTO", "Too many or too few separators in data\n");
+        return PWD_FAILURE;
+    }
+
+    uint16_t len_entry_name = separators[0] - 0;
+    uint16_t len_username = (uint16_t)(separators[1] - (separators[0] + 1));
+    uint16_t len_password = (uint16_t)(separators[2] - (separators[1] + 1));
+    uint16_t len_domains_list = (uint16_t)(separators[3] - (separators[2] + 1));
+    uint16_t len_description = (uint16_t)(separators[4] - (separators[3] + 1));
+
+    data_parsed->entry_name_idx_start = 0;
+    data_parsed->entry_name_len = len_entry_name;
+    data_parsed->username_idx_start = separators[0] + 1;
+    data_parsed->username_len = len_username;
+    data_parsed->password_idx_start = separators[1] + 1;
+    data_parsed->password_len = len_password;
+    data_parsed->domains_list_idx_start = separators[2] + 1;
+    data_parsed->domains_list_len = len_domains_list;
+    data_parsed->description_idx_start = separators[3] + 1;
+    data_parsed->description_len = len_description;
+
+    return PWD_SUCCESS;
 }
 
 
@@ -269,15 +302,26 @@ pwd_err_et proto_parse(proto_hdr_st *packet, proto_parsed_st *parsed)
         parsed->data_args.req_registr = data_parsed;
         return PWD_SUCCESS;
     }
-    case MSG_TYPE_REQ_PWD: {
-        proto_args_req_password_st data_parsed = {0};
-        if (parse_req_password(packet, &data_parsed) == PWD_FAILURE)
+    case MSG_TYPE_REQ_NEW_PWD: {
+        proto_args_req_new_password_st data_parsed = {0};
+        if (parse_req_new_password(packet, &data_parsed) == PWD_FAILURE)
         {
             log_err("PROTO", "Parsing password request failed\n");
             return PWD_FAILURE;
         }
-        parsed->data_args.req_pwd = data_parsed;
+        parsed->data_args.req_new_pwd = data_parsed;
         return PWD_SUCCESS;
+    }
+    case MSG_TYPE_REQ_ADD_ENTRY: {
+        proto_args_req_add_entry_st data_parsed = {0};
+        if (parse_req_add_entry(packet, &data_parsed) == PWD_FAILURE)
+        {
+            log_err("PROTO", "Parsing password request failed\n");
+            return PWD_FAILURE;
+        }
+        parsed->data_args.req_add_entry = data_parsed;
+        return PWD_SUCCESS;
+
     }
     default:
         log_err("PROTO", "Parsing failed due to invalid message type\n");
@@ -340,9 +384,9 @@ void proto_print(proto_hdr_st *packet)
                    data->password_len, &packet->data[data->password_idx_start]);
             break;
         }
-        case MSG_TYPE_REQ_PWD: {
-            const proto_args_req_password_st *data =
-                &packet_parsed.data_args.req_pwd;
+        case MSG_TYPE_REQ_NEW_PWD: {
+            const proto_args_req_new_password_st *data =
+                &packet_parsed.data_args.req_new_pwd;
             printf("\n\tpassword length: \"%d\""
                    "\n\thas captials: \"%u\""
                    "\n\thas numbers: \"%d\""
@@ -351,7 +395,22 @@ void proto_print(proto_hdr_st *packet)
                     packet->data[data->has_capital_letters_idx], 
                     packet->data[data->has_numbers_idx], 
                     packet->data[data->has_special_characters_idx]);
+
             break;
+        }
+        case MSG_TYPE_REQ_ADD_ENTRY: {
+            const proto_args_req_add_entry_st *data =
+                &packet_parsed.data_args.req_add_entry;    
+            printf("\n\tentry name: \"%.*s\""
+                   "\n\tusername: \"%.*s\""
+                   "\n\tpassword: \"%.*s\""
+                   "\n\tdomains list: \"%.*s\""
+                   "\n\tdescription: \"%.*s\"",
+                   data->entry_name_len, &packet->data[data->entry_name_idx_start],
+                   data->username_len, &packet->data[data->username_idx_start],
+                   data->password_len, &packet->data[data->password_idx_start],
+                   data->domains_list_len, &packet->data[data->domains_list_idx_start],
+                   data->description_len, &packet->data[data->description_idx_start]);        
         }
             // Nothing extra to show.
             break;

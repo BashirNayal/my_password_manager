@@ -25,7 +25,10 @@ typedef enum msg_type_s
 
     MSG_TYPE_REQ_LOGIN,
     MSG_TYPE_REQ_REGISTR,
-    MSG_TYPE_REQ_PWD,
+    MSG_TYPE_REQ_NEW_PWD,
+    MSG_TYPE_REQ_ADD_ENTRY,
+    MSG_TYPE_REQ_MODIFY_ENTRY,
+    MSG_TYPE_REQ_GET_ENTRY_LIST,
 
     MSG_TYPE_RES_LOGIN,
     MSG_TYPE_RES_REGISTR,
@@ -61,17 +64,27 @@ typedef struct proto_args_req_registr_s
     uint16_t password_idx_start;
     uint16_t password_len;
 } proto_args_req_registr_st;
-
-typedef struct proto_args_req_password_s
+typedef struct proto_args_req_new_password_s
 {
     uint16_t pwd_length_idx;
     uint16_t has_capital_letters_idx;
     uint16_t has_numbers_idx;
     uint16_t has_special_characters_idx;
+} proto_args_req_new_password_st;
+typedef struct proto_args_req_add_entry_s
+{
+    uint16_t entry_name_idx_start;
+    uint16_t entry_name_len;
+    uint16_t username_idx_start;
+    uint16_t username_len;
+    uint16_t password_idx_start;
+    uint16_t password_len;
+    uint16_t domains_list_idx_start; // comma separated list
+    uint16_t domains_list_len;
+    uint16_t description_idx_start;
+    uint16_t description_len;
 
-
-} proto_args_req_password_st;
-
+}proto_args_req_add_entry_st;
 
 
 /* All the response structs have a status variable which indicates whether or
@@ -94,7 +107,9 @@ typedef struct proto_parsed_s
     union {
         proto_args_req_login_st req_login;
         proto_args_req_registr_st req_registr;
-        proto_args_req_password_st req_pwd;
+        proto_args_req_new_password_st req_new_pwd;
+        proto_args_req_add_entry_st req_add_entry;
+
 
         proto_args_res_login_st res_login;
         proto_args_res_registr_st res_registr;
