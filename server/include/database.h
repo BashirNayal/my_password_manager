@@ -1,0 +1,6 @@
+// https://www.sqlite.org/c3ref/c_open_autoproxy.html
+
+#define DB_RW SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX 
+#define DB_RW_CREATE SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
+
+#define DB_MODE 760

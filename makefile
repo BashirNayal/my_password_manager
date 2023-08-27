@@ -1,10 +1,16 @@
 BIN_EXT:=bin
 C_COMPILER:=gcc
 C_FLAGS:=-g -W -Wall -Wextra -Wpedantic -Wconversion -Wshadow
-LD_FLAGS:=
+LD_FLAGS:=-lsqlite3
 DIR_BUILD:=build
 DIR_ALL=$(DIR_BUILD) $(DIR_BUILD)/$(SERVER_DIR)  $(DIR_BUILD)/$(COMMON_DIR) $(DIR_BUILD)/$(CLIENT_DIR) 
 C_FLAGS += -DDEBUG
+
+DATABASE_DIR:=common
+DATABASE_SRC:=$(wildcard $(DATABASE_DIR)/src/*.c)
+DATABASE_OBJ:=$(COMMON_SRC:$(DATABASE_DIR)/src/%.c=$(DIR_BUILD)/$(DATABASE_DIR)/%.o)
+DATABASE_DEP:=$(COMMON_OBJ:%.o=%.d)
+DATABASE_C_FLAGS:=-I$(DATABASE_DIR)/include
 
 COMMON_DIR:=common
 COMMON_SRC:=$(wildcard $(COMMON_DIR)/src/*.c)
@@ -45,7 +51,7 @@ $(DIR_BUILD)/$(SERVER_NAME).$(BIN_EXT): $(COMMON_OBJ) $(SERVER_OBJ)
 $(DIR_BUILD)/$(CLIENT_DIR)/%.o: $(CLIENT_DIR)/src/%.c
 	$(C_COMPILER) $(<) -o $(@) $(C_FLAGS) $(CLIENT_C_FLAGS) -c -MMD
 $(DIR_BUILD)/$(SERVER_DIR)/%.o: $(SERVER_DIR)/src/%.c
-	$(C_COMPILER) $(<) -o $(@) $(C_FLAGS) $(SERVER_C_FLAGS) -c -MMD
+	$(C_COMPILER) $(<) -o $(@) $(C_FLAGS) $(SERVER_C_FLAGS) -c -MMD 
 $(DIR_BUILD)/$(COMMON_DIR)/%.o: $(COMMON_DIR)/src/%.c
 	$(C_COMPILER) $(<) -o $(@) $(C_FLAGS) $(COMMON_C_FLAGS) -c -MMD
 

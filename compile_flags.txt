@@ -9,4 +9,3 @@
 -Icommon/include
 -Iserver/include
 -Iclient/include
--Iserver_db/include
